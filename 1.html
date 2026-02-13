@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>给小汤宝的信</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 引入在线方正喵呜体 */
+        @font-face {
+            font-family: '方正喵呜体';
+            src: url('https://cdn.staticfile.org/kye-typeface/1.0.0/FZMiaoWuS-GB2312.woff2') format('woff2');
+            font-display: swap;
+        }
+
+        /* 逼真信封 */
+        .envelope {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            background: #f8e9d6;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: #f8e9d6;
+            border-bottom: 2px solid #e0c8a8;
+            transform-origin: top;
+            transition: transform 0.8s ease-in-out;
+            z-index: 20;
+        }
+        .envelope-flap::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(180deg, #e8d0b0 0%, #f8e9d6 100%);
+            clip-path: polygon(0 0, 50% 100%, 100% 0);
+        }
+        .envelope-body {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #f0d9b5 0%, #f8e9d6 50%, #f0d9b5 100%);
+            z-index: 10;
+        }
+
+        @keyframes openFlap {
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(180deg); opacity: 0; }
+        }
+        @keyframes openEnvelope {
+            0% { transform: translateY(0); }
+            30% { transform: translateY(-30px); }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        /* 紫粉终端 + 喵呜体 */
+        .terminal-text {
+            font-family: '方正喵呜体', sans-serif;
+            white-space: pre-wrap;
+            overflow: hidden;
+            border-right: 0.15em solid #d946ef;
+            animation: blink-caret 0.75s step-end infinite;
+            line-height: 1.8;
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #d946ef; }
+        }
+
+        /* 图片样式：尺寸合适+比例不变形 */
+        .img-fade-in {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            margin: 2rem auto; /* 上下间距+水平居中 */
+            width: 90%; /* 占终端容器90%宽度 */
+            max-width: 600px; /* 最大宽度，避免太宽 */
+        }
+        .img-fade-in.show {
+            opacity: 1;
+        }
+        .img-fade-in .img-wrapper {
+            background: #2a193d;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #9333ea;
+            display: flex;
+            justify-content: center;
+        }
+        .img-fade-in img {
+            width: 100%; /* 占容器100%宽度 */
+            height: auto; /* 高度自动，保证比例 */
+            max-height: 400px; /* 最大高度，避免太高 */
+            object-fit: contain; /* 保持图片比例，不拉伸 */
+            border-radius: 4px;
+        }
+        .img-desc {
+            color: #a78bfa;
+            font-size: 1rem; /* 描述文字放大 */
+            margin-top: 0.8rem;
+            text-align: center;
+        }
+
+        .page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: all 0.8s ease-in-out;
+        }
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(100%);
+        }
+
+        /* 背景图加载失败备用样式 */
+        .bg-container {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.6);
+            z-index: 0;
+        }
+        .bg-fallback {
+            position: absolute;
+            inset: 0;
+            background: #1a1026;
+            z-index: -1;
+        }
+
+        /* 下载提示样式 */
+        .download-tip {
+            color: #f0abfc;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans overflow-hidden">
+
+<!-- 第一页：信封 -->
+<div id="page1" class="page flex flex-col items-center justify-center bg-[#fef6ed]">
+    <div id="envelope" class="envelope mb-12">
+        <div id="envelopeFlap" class="envelope-flap"></div>
+        <div class="envelope-body flex flex-col items-center justify-center text-center px-8">
+            <h1 class="text-[#8b5a2b] text-4xl font-bold mb-6 tracking-wide">一封给小汤宝的信</h1>
+            <p class="text-[#5a4a38] text-lg italic">愿这封信，载满温柔予你~</p>
+        </div>
+    </div>
+    <button id="openBtn" class="px-8 py-4 bg-[#8b5a2b] text-white rounded-full text-xl shadow-lg hover:scale-105 active:scale-95 transition-all duration-300">
+        <i class="fas fa-envelope-open mr-2"></i>打开信封
+    </button>
+</div>
+
+<!-- 第二页：紫粉终端 + 喵呜体 -->
+<div id="page2" class="page hidden flex flex-col items-center justify-center bg-[#1a1026] p-8">
+    <div class="w-[80%] h-[80%] bg-[#120b1a] border-2 border-[#701a75] rounded-lg shadow-2xl overflow-auto p-6">
+        <div id="terminalContent" class="terminal-text text-[#f0abfc] text-xl"></div>
+        <div id="nextPrompt" class="mt-8 text-[#f472b6] hidden">
+            <p>按<span class="text-[#c084fc]">任意键</span>继续...</p>
+        </div>
+    </div>
+</div>
+
+<!-- 第三页：结尾（新增下载功能） -->
+<div id="page3" class="page hidden flex flex-col items-center justify-center text-center p-8">
+    <div class="bg-fallback"></div>
+    <!-- 第三页背景图（本地文件，无则自动用紫色背景） -->
+    <div class="bg-container" style="background-image: url('bg.jpg');"></div>
+    <div class="relative z-10 text-white">
+        <h2 class="text-5xl font-bold mb-8 drop-shadow-lg">💌 最后的礼物</h2>
+        <p class="text-2xl mb-12 max-w-2xl mx-auto leading-relaxed">
+            请下载并打开下方的文件，里面有我想对你说的全部心里话
+        </p>
+        <!-- 下载按钮 -->
+        <button 
+            id="downloadBtn"
+            class="inline-block px-10 py-5 bg-[#ff6b6b] text-white rounded-full text-2xl shadow-xl hover:scale-105 transition-all duration-300"
+        >
+            <i class="fas fa-heart mr-3"></i>心意已送达
+        </button>
+        <!-- 下载提示 -->
+        <p id="downloadTip" class="download-tip">
+            🔔 文件已开始下载，浏览器安全限制无法自动打开，请前往下载文件夹手动打开 1.exe
+        </p>
+    </div>
+</div>
+
+<script>
+    // ===== 本地图片版 - 仅保留文件名 =====
+    const letterContent = `
+LazyHan\\Letter\\xtb.html>
+LazyHan >亲爱的小汤宝：
+            你好呀 😊
+            嘿嘿，没想到我会在这里和你说悄悄话吧~还记得我是在2月8日的那局裂变峡谷认识你的，那局我发现你是唯一一个有皮肤而且不呆呆的，
+            我就加了你嘿嘿（结果最后果然不出我所料，那三个剩下的都是人机小号），那局我们一起作战，可惜最后还是迎来了惜败TvT...
+    [IMAGE:698f5fcfc14ad_1771003855.webp:我遇到你的那局]
+            在后面的局中，我给你发皮肤，你都会说谢谢，每一个举动你都会说谢谢，我就觉得你是个很有礼貌的女孩子喔，还有你的声音真的很好很好听，
+            像甜妹那样的😛，我发现你是那么的好，我打瓦从来没有遇到过那么有礼貌，温柔，真诚的女孩子，所以我深知不能弄丢你这个瓦搭子。
+            当我得知你是刚玩这个游戏不久而且经常被压力，我就想陪你教你学会玩这个游戏哇，我深知不能拔苗助长，所以我想带你慢慢的进步，
+            一点一点的让你适应和进步，当然，我感觉你有点特性喔，每次当我和你打的时候，我的性格莫名都会从大大咧咧变化到温柔（我也算不上温柔吧😓）
+            我想要一点一点鼓励你，不想让你有任何压力，因为每个人都有刚接触的时候，对不对，当然，最近我也看到你的进步啦~
+            你从最开始的不敢对枪，只敢躲，杀不到人，变化到敢于去找，去对枪，再到现在你能够颗秒到人，拿了奥丁五杀，会玩大狙了。
+            我真的很佩服你，能有如此的进步，不必说什么运气好，每个段位都有自己的好枪，只要能杀人，那就是好枪，小宝。
+            你的每一次进步，我都有记录，等到未来某一天，你变强了，再回看这段录像，心里一定会感慨万千吧，这就是你的来时路。
+ [IMAGE:698f5fcd07664_1771003853.png:小汤宝的成长记录]
+            我貌似好像也喜欢上和你一起玩了，你是我现在上游戏唯一的变量，我觉得和你一起玩真的很开心很开心，你很可爱，看到你的成长，我也很开心。
+            我貌似也好像对你产生依赖了TvT，之前每天我醒来都能看到你给我发的消息，好像今天没有看到，我心里就有点难过，好在后面有收到喔，又和你一起玩啦，
+            只要一和你一起玩，那些坏情绪都会一扫而空，每次手机响起，当我看到是你的消息，真的会迫不及待的打开手机去看哇咔咔，当我看到是广告，我将会
+            像火男丢闪一样，给他扔到旁边🤯！！！！！！
+            我想一直一直陪你玩下去，希望我们能成为永远的朋友喔，我想陪你的，不局限于瓦罗兰特，当你在生活中遇到不开心了，尽管来找我，不死臭鸟很愿意做你的避风港，
+            为你排忧解难，当你在电脑方面遇到什么问题啦，也可以问我，我可以帮你解决喔~
+            愿你天天开心 健健康康 万事顺意 继续爱你所爱 ：）
+    LazyHan
+    2026年2月13日 深夜
+    `;
+
+    const typingSpeed = 50;
+    // 下载文件的URL
+    const downloadUrl = 'https://www.baidu.com/1.exe';
+
+    // 页面元素
+    const page1 = document.getElementById('page1');
+    const page2 = document.getElementById('page2');
+    const page3 = document.getElementById('page3');
+    const openBtn = document.getElementById('openBtn');
+    const envelope = document.getElementById('envelope');
+    const envelopeFlap = document.getElementById('envelopeFlap');
+    const terminalContent = document.getElementById('terminalContent');
+    const nextPrompt = document.getElementById('nextPrompt');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const downloadTip = document.getElementById('downloadTip');
+
+    // 核心：处理本地图片标签（新增图片容器，保证样式）
+    function processLocalImageTag(match, content) {
+        const parts = content.split(':');
+        const fileName = parts[0].trim();
+        const desc = parts.slice(1).join(':').trim() || '图片';
+        
+        // 新增img-wrapper容器，分离背景/边框和图片，避免影响比例
+        return `<div class="img-fade-in">
+            <div class="img-wrapper">
+                <img src="${fileName}" alt="${desc}" onerror="this.alt='${desc}（图片未找到）'; this.innerText='${desc}（请确认图片和HTML文件在同一文件夹）'">
+            </div>
+            <p class="img-desc">${desc}</p>
+        </div>`;
+    }
+
+    // 下载文件函数
+    function downloadAndOpenFile(url) {
+        // 1. 创建隐藏的下载链接触发下载
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = '1.exe'; // 指定下载后的文件名
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // 2. 显示下载提示（浏览器无法自动打开exe文件）
+        downloadTip.style.display = 'block';
+
+        // 3. 尝试打开（仅作补充，浏览器几乎都会拦截）
+        try {
+            window.open(url, '_blank');
+        } catch (e) {
+            console.log('浏览器安全策略限制，无法自动打开可执行文件');
+        }
+    }
+
+    // 绑定下载按钮点击事件
+    downloadBtn.addEventListener('click', () => {
+        downloadAndOpenFile(downloadUrl);
+    });
+
+    // 打开信封逻辑
+    openBtn.addEventListener('click', () => {
+        envelopeFlap.style.animation = 'openFlap 1s forwards';
+        setTimeout(() => envelope.style.animation = 'openEnvelope 0.8s forwards', 300);
+        setTimeout(() => {
+            page1.classList.add('hidden');
+            page2.classList.remove('hidden');
+            startTyping();
+        }, 1000);
+    });
+
+    // 打字机效果（图片随打字进度实时淡入）
+    function startTyping() {
+        let index = 0;
+        let currentHtml = '';
+
+        function safeProcessText(text) {
+            return text.replace(/\[IMAGE:([^\]]+)\]/g, processLocalImageTag);
+        }
+
+        const processedText = safeProcessText(letterContent);
+
+        function typeChar() {
+            if (index < processedText.length) {
+                currentHtml += processedText.charAt(index);
+                terminalContent.innerHTML = currentHtml;
+                
+                // 每打一个字符，立即让已出现的图片淡入
+                const allImgs = terminalContent.querySelectorAll('.img-fade-in');
+                allImgs.forEach(img => {
+                    if (!img.classList.contains('show')) {
+                        img.classList.add('show');
+                    }
+                });
+                
+                // 自动滚动到底部
+                terminalContent.parentElement.scrollTop = terminalContent.parentElement.scrollHeight;
+                
+                index++;
+                setTimeout(typeChar, typingSpeed);
+            } else {
+                terminalContent.style.borderRight = 'none';
+                nextPrompt.classList.remove('hidden');
+                document.addEventListener('keydown', goToPage3);
+                nextPrompt.addEventListener('click', goToPage3);
+            }
+        }
+
+        typeChar();
+    }
+
+    // 跳转到第三页
+    function goToPage3() {
+        document.removeEventListener('keydown', goToPage3);
+        nextPrompt.removeEventListener('click', goToPage3);
+        page2.classList.add('hidden');
+        page3.classList.remove('hidden');
+    }
+
+    // 移动端适配
+    window.addEventListener('resize', () => {
+        if (window.innerWidth < 768) {
+            envelope.style.width = '90%';
+            envelope.style.height = '300px';
+        } else {
+            envelope.style.width = '600px';
+            envelope.style.height = '400px';
+        }
+    });
+    window.dispatchEvent(new Event('resize'));
+</script>
+</body>
+</html>
