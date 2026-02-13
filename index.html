@@ -7,14 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 引入在线方正喵呜体 */
         @font-face {
             font-family: '方正喵呜体';
             src: url('https://cdn.staticfile.org/kye-typeface/1.0.0/FZMiaoWuS-GB2312.woff2') format('woff2');
             font-display: swap;
         }
-
-        /* 逼真信封 */
         .envelope {
             position: relative;
             width: 600px;
@@ -65,8 +62,6 @@
             30% { transform: translateY(-30px); }
             100% { transform: translateY(-100vh); opacity: 0; }
         }
-
-        /* 紫粉终端 + 喵呜体 */
         .terminal-text {
             font-family: '方正喵呜体', sans-serif;
             white-space: pre-wrap;
@@ -79,14 +74,12 @@
             from, to { border-color: transparent; }
             50% { border-color: #d946ef; }
         }
-
-        /* 图片样式：尺寸合适+比例不变形 */
         .img-fade-in {
             opacity: 0;
             transition: opacity 1s ease-in-out;
-            margin: 2rem auto; /* 上下间距+水平居中 */
-            width: 90%; /* 占终端容器90%宽度 */
-            max-width: 600px; /* 最大宽度，避免太宽 */
+            margin: 2rem auto; 
+            width: 90%;
+            max-width: 600px;
         }
         .img-fade-in.show {
             opacity: 1;
@@ -100,15 +93,15 @@
             justify-content: center;
         }
         .img-fade-in img {
-            width: 100%; /* 占容器100%宽度 */
-            height: auto; /* 高度自动，保证比例 */
-            max-height: 400px; /* 最大高度，避免太高 */
-            object-fit: contain; /* 保持图片比例，不拉伸 */
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
             border-radius: 4px;
         }
         .img-desc {
             color: #a78bfa;
-            font-size: 1rem; /* 描述文字放大 */
+            font-size: 1rem;
             margin-top: 0.8rem;
             text-align: center;
         }
@@ -126,8 +119,6 @@
             pointer-events: none;
             transform: translateX(100%);
         }
-
-        /* 背景图加载失败备用样式 */
         .bg-container {
             position: absolute;
             inset: 0;
@@ -142,8 +133,6 @@
             background: #1a1026;
             z-index: -1;
         }
-
-        /* 下载提示样式 */
         .download-tip {
             color: #f0abfc;
             font-size: 0.9rem;
@@ -154,7 +143,7 @@
 </head>
 <body class="bg-gray-100 font-sans overflow-hidden">
 
-<!-- 第一页：信封 -->
+<!--信封 -->
 <div id="page1" class="page flex flex-col items-center justify-center bg-[#fef6ed]">
     <div id="envelope" class="envelope mb-12">
         <div id="envelopeFlap" class="envelope-flap"></div>
@@ -168,7 +157,6 @@
     </button>
 </div>
 
-<!-- 第二页：紫粉终端 + 喵呜体 -->
 <div id="page2" class="page hidden flex flex-col items-center justify-center bg-[#1a1026] p-8">
     <div class="w-[80%] h-[80%] bg-[#120b1a] border-2 border-[#701a75] rounded-lg shadow-2xl overflow-auto p-6">
         <div id="terminalContent" class="terminal-text text-[#f0abfc] text-xl"></div>
@@ -177,23 +165,20 @@
         </div>
     </div>
 </div>
-
-<!-- 第三页：结尾（新增下载功能） -->
 <div id="page3" class="page hidden flex flex-col items-center justify-center text-center p-8">
     <div class="bg-fallback"></div>
-    <!-- 第三页背景图（本地文件，无则自动用紫色背景） -->
     <div class="bg-container" style="background-image: url('bg.jpg');"></div>
     <div class="relative z-10 text-white">
-        <h2 class="text-5xl font-bold mb-8 drop-shadow-lg">💌 最后的礼物</h2>
+        <h2 class="text-5xl font-bold mb-8 drop-shadow-lg">💌 最后的小玩意</h2>
         <p class="text-2xl mb-12 max-w-2xl mx-auto leading-relaxed">
-            请下载并打开下方的文件，里面有我想对你说的全部心里话
+            请下载并打开下方的文件哦~
         </p>
         <!-- 下载按钮 -->
         <button 
             id="downloadBtn"
             class="inline-block px-10 py-5 bg-[#ff6b6b] text-white rounded-full text-2xl shadow-xl hover:scale-105 transition-all duration-300"
         >
-            <i class="fas fa-heart mr-3"></i>心意已送达
+            <i class="fas fa-heart mr-3"></i>点我下载
         </button>
         <!-- 下载提示 -->
         <p id="downloadTip" class="download-tip">
@@ -232,10 +217,7 @@ LazyHan >亲爱的小汤宝：
     `;
 
     const typingSpeed = 50;
-    // 下载文件的URL
     const downloadUrl = 'https://www.baidu.com/1.exe';
-
-    // 页面元素
     const page1 = document.getElementById('page1');
     const page2 = document.getElementById('page2');
     const page3 = document.getElementById('page3');
@@ -246,14 +228,10 @@ LazyHan >亲爱的小汤宝：
     const nextPrompt = document.getElementById('nextPrompt');
     const downloadBtn = document.getElementById('downloadBtn');
     const downloadTip = document.getElementById('downloadTip');
-
-    // 核心：处理本地图片标签（新增图片容器，保证样式）
     function processLocalImageTag(match, content) {
         const parts = content.split(':');
         const fileName = parts[0].trim();
         const desc = parts.slice(1).join(':').trim() || '图片';
-        
-        // 新增img-wrapper容器，分离背景/边框和图片，避免影响比例
         return `<div class="img-fade-in">
             <div class="img-wrapper">
                 <img src="${fileName}" alt="${desc}" onerror="this.alt='${desc}（图片未找到）'; this.innerText='${desc}（请确认图片和HTML文件在同一文件夹）'">
@@ -261,35 +239,24 @@ LazyHan >亲爱的小汤宝：
             <p class="img-desc">${desc}</p>
         </div>`;
     }
-
-    // 下载文件函数
     function downloadAndOpenFile(url) {
-        // 1. 创建隐藏的下载链接触发下载
         const link = document.createElement('a');
         link.href = url;
-        link.download = '1.exe'; // 指定下载后的文件名
+        link.download = '1.exe';
         link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
-        // 2. 显示下载提示（浏览器无法自动打开exe文件）
         downloadTip.style.display = 'block';
-
-        // 3. 尝试打开（仅作补充，浏览器几乎都会拦截）
         try {
             window.open(url, '_blank');
         } catch (e) {
             console.log('浏览器安全策略限制，无法自动打开可执行文件');
         }
     }
-
-    // 绑定下载按钮点击事件
     downloadBtn.addEventListener('click', () => {
         downloadAndOpenFile(downloadUrl);
     });
-
-    // 打开信封逻辑
     openBtn.addEventListener('click', () => {
         envelopeFlap.style.animation = 'openFlap 1s forwards';
         setTimeout(() => envelope.style.animation = 'openEnvelope 0.8s forwards', 300);
@@ -299,8 +266,6 @@ LazyHan >亲爱的小汤宝：
             startTyping();
         }, 1000);
     });
-
-    // 打字机效果（图片随打字进度实时淡入）
     function startTyping() {
         let index = 0;
         let currentHtml = '';
@@ -314,17 +279,13 @@ LazyHan >亲爱的小汤宝：
         function typeChar() {
             if (index < processedText.length) {
                 currentHtml += processedText.charAt(index);
-                terminalContent.innerHTML = currentHtml;
-                
-                // 每打一个字符，立即让已出现的图片淡入
+                terminalContent.innerHTML = currentHtml; 
                 const allImgs = terminalContent.querySelectorAll('.img-fade-in');
                 allImgs.forEach(img => {
                     if (!img.classList.contains('show')) {
                         img.classList.add('show');
                     }
                 });
-                
-                // 自动滚动到底部
                 terminalContent.parentElement.scrollTop = terminalContent.parentElement.scrollHeight;
                 
                 index++;
@@ -339,16 +300,12 @@ LazyHan >亲爱的小汤宝：
 
         typeChar();
     }
-
-    // 跳转到第三页
     function goToPage3() {
         document.removeEventListener('keydown', goToPage3);
         nextPrompt.removeEventListener('click', goToPage3);
         page2.classList.add('hidden');
         page3.classList.remove('hidden');
     }
-
-    // 移动端适配
     window.addEventListener('resize', () => {
         if (window.innerWidth < 768) {
             envelope.style.width = '90%';
@@ -363,3 +320,4 @@ LazyHan >亲爱的小汤宝：
 </body>
 
 </html>
+
